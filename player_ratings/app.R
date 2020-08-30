@@ -9,60 +9,110 @@ library(shinythemes)
 library(DT)
 library(gt)
 
-fbsplayerratings <- read.csv("fbs_player_ratings.csv", as.is = TRUE)
+offensiveplayerratings <- read.csv("fbs_offensive_player_ratings.csv", as.is = TRUE)
 
-fbsplayerratings <- fbsplayerratings %>%
+offensiveplayerratings <- offensiveplayerratings %>%
     rename(Season = Year)
 
-fbsplayerratings <- fbsplayerratings %>%
+offensiveplayerratings <- offensiveplayerratings %>%
     mutate_at(vars(Passing, Rushing, Receiving, Total), funs(round(., 4)))
 
+defensiveplayerratings <- read.csv("fbs_defensive_player_ratings.csv", as.is = TRUE)
 
-ui <- fluidPage(theme = shinytheme("cosmo"),
-                
-                titlePanel("FBS Offensive Player Ratings (2010-2019)"),
-                
-                fluidRow(
+ui <- fluidPage(
+    navbarPage("Free Shoes U", theme = shinytheme("cosmo"),
+        tabPanel("Home", 
+                 fluidRow(
+                     column(6,
+                            h4(p("Welcome to Free Shoes U")),
+                            h5(p("A College Football Website featuring Advanced Stats by Geoff Hutchinson.")))
+               )),
+               navbarMenu("Player Ratings",
+                          tabPanel("Offense",
+                    fluidRow(
                     column(3,
                            selectInput("School",
                                        "School:",
                                        c("All",
-                                         sort(unique(as.character(fbsplayerratings$School)))))
+                                         sort(unique(as.character(offensiveplayerratings$School)))))
                     ),
                     column(3,
                            selectInput("Conference",
                                        "Conference:",
                                        c("All",
-                                         sort(unique(as.character(fbsplayerratings$Conference)))))
+                                         sort(unique(as.character(offensiveplayerratings$Conference)))))
                     ),
                     column(3,
                            selectInput("Season",
                                        "Season:",
                                        c("All",
-                                         sort(unique(as.character(fbsplayerratings$Season)))))
+                                         sort(unique(as.character(offensiveplayerratings$Season)))))
                     )
                 ),
                 
-                div(DT::dataTableOutput("table"), style = "font-size:75%")
+                div(DT::dataTableOutput("table"), style = "font-size:85%")
+),
+                    tabPanel("Defense",
+                        fluidRow(
+                    column(3,
+                    selectInput("School",
+                                "School:",
+                                c("All",
+                                  sort(unique(as.character(defensiveplayerratings$School)))))
+             ),
+                    column(3,
+                    selectInput("Conference",
+                                "Conference:",
+                                c("All",
+                                  sort(unique(as.character(defensiveplayerratings$Conference)))))
+             ),
+                    column(3,
+                    selectInput("Season",
+                                "Season:",
+                                c("All",
+                                  sort(unique(as.character(defensiveplayerratings$Season)))))
+             )
+         ),
+         
+         div(DT::dataTableOutput("table1"), style = "font-size:85%")
 )
+        
+    )
+)
+)
+
 
 server <- function(input, output) {
     
     # Filter data based on selections
     output$table <- DT::renderDataTable(DT::datatable({
-        fbsplayerratings <- fbsplayerratings
+        offensiveplayerratings <- offensiveplayerratings
         if (input$School != "All") {
-            fbsplayerratings <- fbsplayerratings[fbsplayerratings$School == input$School,]
+            offensiveplayerratings <- offensiveplayerratings[offensiveplayerratings$School == input$School,]
         }
         if (input$Conference != "All") {
-            fbsplayerratings <- fbsplayerratings[fbsplayerratings$Conference == input$Conference,]
+            offensiveplayerratings <- offensiveplayerratings[offensiveplayerratings$Conference == input$Conference,]
         }
         if (input$Season != "All") {
-            fbsplayerratings <- fbsplayerratings[fbsplayerratings$Season == input$Season,]
+            offensiveplayerratings <- offensiveplayerratings[offensiveplayerratings$Season == input$Season,]
         }
-        fbsplayerratings
+        offensiveplayerratings
     }))
     
+    output$table1 <- DT::renderDataTable(DT::datatable({
+        defensiveplayerratings <- defensiveplayerratings
+        if (input$School != "All") {
+            defensiveplayerratings <- defensiveplayerratings[defensiveplayerratings$School == input$School,]
+        }
+        if (input$Conference != "All") {
+            defensiveplayerratings <- defensiveplayerratings[defensiveplayerratings$Conference == input$Conference,]
+        }
+        if (input$Season != "All") {
+            defensiveplayerratings <- defensiveplayerratings[defensiveplayerratings$Season == input$Season,]
+        }
+        defensiveplayerratings
+    }))
+   
 }
 
 # Run the application 
